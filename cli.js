@@ -14,12 +14,13 @@ program
   .version('0.1.0');
 
 program
-  .command('publish <path>')
-  .description('Publish a file or folder to FlowerShow')
+  .command('publish <path> [morePaths...]')
+  .description('Publish file(s) or folder to FlowerShow')
   .option('--overwrite', 'Overwrite existing site if it already exists')
-  .action(async (path, options) => {
+  .action(async (path, morePaths, options) => {
     console.log(chalk.bold('\n🌸 FlowerShow CLI - Publish\n'));
-    await publishCommand(path, options.overwrite);
+    const paths = [path, ...morePaths];
+    await publishCommand(paths, options.overwrite);
   });
 
 program

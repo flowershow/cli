@@ -25,6 +25,7 @@
    ```
 
    The setup script will automatically:
+
    - Install dependencies
    - Generate Prisma client
    - Create the anonymous user in the database
@@ -35,6 +36,12 @@
 
 ```bash
 node cli.js publish ../docs/my-note.md
+```
+
+### Publish multiple files
+
+```bash
+node cli.js publish ../docs/intro.md ../docs/chapter1.md ../docs/chapter2.md
 ```
 
 ### Publish a folder
@@ -64,6 +71,14 @@ node cli.js delete my-note
 - **Saved as:** `README.md`
 - **URL:** `https://flowershow.app/@anonymous/my-note`
 
+### Multiple Files
+
+- **Input:** `intro.md chapter1.md chapter2.md`
+- **Project name:** `intro` (from first file)
+- **First file saved as:** `README.md`
+- **Other files:** Keep their original names
+- **URL:** `https://flowershow.app/@anonymous/intro`
+
 ### Folder
 
 - **Input:** `my-notes/` folder
@@ -73,41 +88,13 @@ node cli.js delete my-note
 
 ## Common Issues
 
-### "ANONYMOUS_USER_ID not set"
-
-→ Create `.env` file and set the variable
-
 ### "Site already exists"
 
-→ Delete it first: `node cli.js delete <name>`
+→ Delete it first: `node cli.js delete <name>` or use `--overwrite` flag when publishing.
 
 ### "No markdown files found"
 
 → Site will be created but empty (add .md or .mdx files)
-
-## File Structure Created
-
-```
-cli/
-├── cli.js                    # Main entry point
-├── package.json             # Dependencies
-├── .env                     # Your config (gitignored)
-├── .env.example            # Template
-├── setup.sh                # Setup script
-├── README.md               # Full documentation
-├── QUICKSTART.md           # This file
-├── lib/
-│   ├── db.js              # Database operations
-│   ├── storage.js         # R2 uploads
-│   ├── files.js           # File discovery
-│   ├── utils.js           # Utilities
-│   └── commands/
-│       ├── publish.js     # Publish command
-│       ├── list.js        # List command
-│       └── delete.js      # Delete command
-└── prisma/
-    └── schema.prisma      # Database schema
-```
 
 ## Next Steps
 
