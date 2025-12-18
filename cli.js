@@ -16,9 +16,10 @@ program
 program
   .command('publish <path>')
   .description('Publish a file or folder to FlowerShow')
-  .action(async (path) => {
+  .option('--overwrite', 'Overwrite existing site if it already exists')
+  .action(async (path, options) => {
     console.log(chalk.bold('\n🌸 FlowerShow CLI - Publish\n'));
-    await publishCommand(path);
+    await publishCommand(path, options.overwrite);
   });
 
 program
