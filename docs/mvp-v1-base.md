@@ -7,8 +7,9 @@ A minimal Node.js CLI tool that enables direct publishing of Markdown files/fold
 ## Design Decisions Summary
 
 ### User & Project Management
+
 - **Anonymous User**: All CLI uploads use a single "anonymous" user (ghUsername: "anonymous")
-- **Project Naming**: 
+- **Project Naming**:
   - Single file: Use filename as project name, save as `README.md` (or `.mdx`)
   - Folder: Use folder name as project name
   - Conflicts: Fail with clear error message listing existing sites
@@ -16,6 +17,7 @@ A minimal Node.js CLI tool that enables direct publishing of Markdown files/fold
 - **URL Pattern**: `https://flowershow.app/@anonymous/{project-name}`
 
 ### CLI Structure
+
 - **Location**: `/cli` directory in main repository
 - **Type**: Simple Node.js script (not an npm package yet)
 - **Commands**:
@@ -25,6 +27,7 @@ A minimal Node.js CLI tool that enables direct publishing of Markdown files/fold
 - **Configuration**: Read from `.env` file in CLI directory
 
 ### File Handling
+
 - **Smart Filtering**: Ignore common non-content directories/files:
   - `.git/`, `node_modules/`, `.DS_Store`, `Thumbs.db`
   - `.env*`, `*.log`, `.cache/`, `dist/`, `build/`
@@ -55,6 +58,7 @@ graph TD
 ### Database Operations
 
 1. **Site Creation**:
+
 ```typescript
 {
   projectName: string,        // from file/folder name
@@ -69,6 +73,7 @@ graph TD
 ```
 
 2. **Blob Creation** (for each file):
+
 ```typescript
 {
   siteId: string,
@@ -155,13 +160,14 @@ const IGNORE_PATTERNS = [
 ];
 
 function shouldIncludeFile(filePath) {
-  return !IGNORE_PATTERNS.some(pattern => pattern.test(filePath));
+  return !IGNORE_PATTERNS.some((pattern) => pattern.test(filePath));
 }
 ```
 
 ### 3. Single File Handling
 
 When publishing a single file:
+
 1. Extract filename without extension as project name
 2. Determine if `.md` or `.mdx` based on extension
 3. Upload to R2 as `README.md` or `README.mdx`
@@ -170,6 +176,7 @@ When publishing a single file:
 ### 4. URL Path Resolution
 
 Reuse existing logic from [`lib/resolve-link.ts`](../lib/resolve-link.ts):
+
 - For markdown files: Convert file path to URL path
 - Remove `.md`/`.mdx` extensions
 - Handle `README.md` → `/` (root)
@@ -181,22 +188,22 @@ Reuse existing logic from [`lib/resolve-link.ts`](../lib/resolve-link.ts):
 async function waitForSync(siteId, maxWaitSeconds = 30) {
   const startTime = Date.now();
   const maxWaitMs = maxWaitSeconds * 1000;
-  
+
   while (Date.now() - startTime < maxWaitMs) {
     const blobs = await prisma.blob.findMany({
-      where: { 
+      where: {
         siteId,
-        extension: { in: ['md', 'mdx'] }
+        extension: { in: ["md", "mdx"] },
       },
-      select: { syncStatus: true }
+      select: { syncStatus: true },
     });
-    
-    const allSuccess = blobs.every(b => b.syncStatus === 'SUCCESS');
+
+    const allSuccess = blobs.every((b) => b.syncStatus === "SUCCESS");
     if (allSuccess) return true;
-    
+
     await sleep(1000); // Wait 1 second
   }
-  
+
   return false; // Timeout
 }
 ```
@@ -243,7 +250,7 @@ S3_REGION="auto"
 S3_FORCE_PATH_STYLE="true"
 
 # FlowerShow
-NEXT_PUBLIC_ROOT_DOMAIN="flowershow.app"
+APP_URL="flowershow.app"
 
 # Anonymous User ID (from database)
 ANONYMOUS_USER_ID="cli_anonymous_user_id"
