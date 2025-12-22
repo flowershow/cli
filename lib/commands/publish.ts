@@ -238,7 +238,10 @@ export async function publishCommand(
     }
 
     // Display success
-    displayPublishSuccess(projectName, user.username || user.email || "user");
+    displayPublishSuccess(
+      site.projectName,
+      user.username || user.email || "user"
+    );
   } catch (error) {
     if (error instanceof Error) {
       displayError(error.message);
