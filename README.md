@@ -5,7 +5,7 @@ A CLI tool for publishing Markdown files and folders directly to FlowerShow with
 ## Installation
 
 ```bash
-npm install -g flowershow
+npm install -g flowershow@latest
 ```
 
 Then use the `flowershow` command anywhere:
