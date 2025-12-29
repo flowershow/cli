@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { publishCommand } from "./lib/commands/publish.js";
+import { syncCommand } from "./lib/commands/sync.js";
 import { listCommand } from "./lib/commands/list.js";
 import { deleteCommand } from "./lib/commands/delete.js";
 import { authLoginCommand } from "./lib/commands/auth-login.js";
@@ -63,6 +64,30 @@ program
       console.log(chalk.bold("\n💐 FlowerShow CLI - Publish\n"));
       const paths = [path, ...morePaths];
       await publishCommand(paths, options.overwrite || false, options.name);
+    }
+  );
+
+program
+  .command("sync <path>")
+  .description("Sync changes to an existing published site")
+  .option(
+    "--name <siteName>",
+    "Specify site name if different from folder name"
+  )
+  .option("--dry-run", "Show what would be synced without making changes")
+  .option("--verbose", "Show detailed list of all files in each category")
+  .action(
+    async (
+      path: string,
+      options: {
+        name?: string;
+        dryRun?: boolean;
+        force?: boolean;
+        verbose?: boolean;
+      }
+    ) => {
+      console.log(chalk.bold("\n💐 FlowerShow CLI - Sync\n"));
+      await syncCommand(path, options);
     }
   );
 

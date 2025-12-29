@@ -2,7 +2,6 @@ import chalk from "chalk";
 import ora from "ora";
 import { getToken, getUserInfo } from "../auth.js";
 import { displayError } from "../utils.js";
-import { API_URL } from "../const.js";
 
 /**
  * Auth status command - show current authentication status
@@ -21,7 +20,7 @@ export async function authStatusCommand(): Promise<void> {
 
     try {
       // Verify token is still valid by fetching user info
-      const userInfo = await getUserInfo(API_URL, tokenData.token);
+      const userInfo = await getUserInfo(tokenData.token);
 
       spinner.succeed("Authenticated");
       console.log(

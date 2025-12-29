@@ -3,10 +3,9 @@ import { resolve } from "path";
 import chalk from "chalk";
 import ora from "ora";
 import cliProgress from "cli-progress";
-import { isAuthenticated, getUserInfo, getToken } from "../auth.js";
 import {
   createSite,
-  getUploadUrls,
+  syncFiles,
   uploadToR2,
   getSiteByName,
 } from "../api-client.js";
@@ -17,7 +16,7 @@ import {
   displayWarning,
   waitForSync,
 } from "../utils.js";
-import { API_URL } from "../const.js";
+import { requireAuth } from "../auth.js";
 
 interface UploadResult {
   path: string;
@@ -59,32 +58,6 @@ function getContentType(extension: string): string {
 }
 
 /**
- * Check if user is authenticated, exit if not
- */
-function requireAuth(): void {
-  if (!isAuthenticated()) {
-    displayError(
-      "You must be authenticated to use this command.\n" +
-        "Run `flowershow auth login` to authenticate."
-    );
-    process.exit(1);
-  }
-}
-
-/**
- * Get authenticated user info
- */
-async function getAuthenticatedUser() {
-  const tokenData = getToken();
-  if (!tokenData) {
-    throw new Error("Not authenticated");
-  }
-
-  const userInfo = await getUserInfo(API_URL, tokenData.token);
-  return userInfo;
-}
-
-/**
  * Publish command - upload files to FlowerShow
  * @param inputPaths - Path(s) to the file(s) or folder to publish
  * @param overwrite - Whether to overwrite existing site
@@ -96,14 +69,9 @@ export async function publishCommand(
   siteName?: string
 ): Promise<void> {
   try {
-    // Check authentication first
-    requireAuth();
-
     const spinner = ora();
+    const user = await requireAuth();
 
-    // Get authenticated user
-    spinner.start("Authenticating...");
-    const user = await getAuthenticatedUser();
     spinner.succeed(`Publishing as: ${user.username || user.email}`);
 
     spinner.start("Discovering files...");
@@ -134,7 +102,7 @@ export async function publishCommand(
     // Check if site already exists (if not overwriting)
     if (existingSite && !overwrite) {
       displayError(
-        `A site named '${projectName}' already exists.\n` +
+        `A site named '${existingSite.site.projectName}' already exists.\n` +
           `Please choose a different name or delete the existing site first.\n` +
           `Use 'flowershow list' to see all sites.\n\n` +
           `💡 Tip: Use the --overwrite flag to publish over an existing site.`
@@ -163,27 +131,35 @@ export async function publishCommand(
       cliProgress.Presets.shades_classic
     );
 
-    uploadBar.start(files.length, 0);
-
-    // Prepare file metadata for presigned URL request
+    // Prepare file metadata for sync request
     const fileMetadata = files.map((file) => ({
       path: file.path,
       size: file.size,
       sha: file.sha,
     }));
 
-    // Get presigned URLs from API
-    const uploadData = await getUploadUrls(site.id, fileMetadata);
+    // Get sync plan from API (for initial publish, all files will be in uploadUrls)
+    const syncPlan = await syncFiles(site.id, fileMetadata);
+
+    // Update progress bar with actual files to upload
+    uploadBar.start(syncPlan.uploadUrls.length, 0);
 
     // Upload files directly to R2 using presigned URLs
     const uploadResults: UploadResult[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file) continue;
+    for (let i = 0; i < syncPlan.uploadUrls.length; i++) {
+      const uploadInfo = syncPlan.uploadUrls[i];
+      if (!uploadInfo) continue;
 
-      const uploadInfo = uploadData.uploadUrls.find(
-        (u) => u.path === file.path
-      );
+      const file = files.find((f) => f.path === uploadInfo.path);
+      if (!file) {
+        uploadResults.push({
+          path: uploadInfo.path,
+          success: false,
+          error: "File not found in local files",
+        });
+        uploadBar.increment();
+        continue;
+      }
 
       if (!uploadInfo) {
         uploadResults.push({

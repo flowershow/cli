@@ -31,8 +31,6 @@ This will:
 2. Open your browser to authorize the CLI
 3. Store your authentication token locally
 
-See [Authentication Documentation](docs/authentication.md) for details.
-
 ### 2. Publish Your Content
 
 ```bash
@@ -41,6 +39,16 @@ flowershow publish ./my-notes
 
 # Publish a single file
 flowershow publish ./my-note.md
+```
+
+### 3. Sync after changes
+
+```bash
+# Sync a folder site
+flowershow sync ./my-notes
+
+# Sync a single file site
+flowershow sync ./my-note.md
 ```
 
 ## Commands
@@ -82,7 +90,7 @@ Publish files or folders to FlowerShow.
 **Options:**
 
 - `--overwrite` - Overwrite existing site if it already exists
-- `--name <siteName>` - Custom name for the site (defaults to file/folder name)
+- `--name <siteName>` - Custom name for the site (defaults to file/folder name). Note: If you use it, you need to pass it also to the `sync` command later on, so that Flowershow knows content of which site you're trying to sync.
 
 **Examples:**
 
@@ -108,8 +116,8 @@ flowershow publish ./my-notes --name my-custom-site --overwrite
 
 **What happens:**
 
-1. Files are discovered and filtered (ignores `.git`, `node_modules`, etc.)
-2. Project name is derived from the first file/folder name
+1. Files are discovered and filtered (ignores `.git`, `node_modules`, etc.; also supports `.gitignore` and will ignore paths listed there)
+2. Project name is derived from the first file name or the folder name
 3. Site is created via the FlowerShow API
 4. Presigned URLs are obtained for secure file uploads
 5. Files are uploaded directly to Cloudflare R2 storage
@@ -118,22 +126,71 @@ flowershow publish ./my-notes --name my-custom-site --overwrite
 
 **Single file behavior:**
 
-- Filename becomes the project name
-- File is saved as `README.md` (or `README.mdx`)
-- Accessible at `/@{username}/{filename}`
+- Filename becomes the project name (e.g. `flowershow publish about.md` will create a site named `about`)
+- File is saved as `README.md` (or `README.mdx` depending on the original file extension)
+- Site accessible at `/@{username}/{filename}` (e.g. `/@johndoe/about`)
 
 **Multiple files behavior:**
 
-- First filename becomes the project name
+- First filename becomes the project name (e.g. `flowershow publish about.md team.md abc.md` will create a site named `about`)
 - First file is saved as `README.md` (or `README.mdx`)
 - Subsequent files keep their original names
-- Accessible at `/@{username}/{first-filename}`
+- Site accessible at `/@{username}/{first-filename}` (e.g. `/@johndoe/about`)
 
 **Folder behavior:**
 
-- Folder name becomes the project name
+- Folder name becomes the project name (e.g. `flowershow publish my-digital-garden/blog` will create a site named `blog`)
 - All files maintain their relative paths
-- Accessible at `/@{username}/{foldername}`
+- Site accessible at `/@{username}/{foldername}` (e.g. `/@johndoe/blog`)
+
+#### `flowershow sync <path> [options]`
+
+Sync changes to an existing published site. Only uploads new or modified files, and deletes files that no longer exist locally.
+
+**Options:**
+
+- `--name <siteName>` - Specify site name if different from folder name
+- `--dry-run` - Show what would be synced without making changes
+- `--verbose` - Show detailed list of all files in each category
+
+**Examples:**
+
+```bash
+# Sync changes to a folder
+flowershow sync ./my-notes
+
+# Preview changes without syncing
+flowershow sync ./my-notes --dry-run
+
+# Show detailed file lists including unchanged files
+flowershow sync ./my-notes --verbose
+
+# Sync to a specific site name
+flowershow sync ./my-notes --name my-custom-site
+
+# Combine options
+flowershow sync ./my-notes --dry-run --verbose
+```
+
+**What happens:**
+
+1. Files are discovered and SHA hashes calculated
+2. File list is sent to the API for comparison
+3. API compares with existing files and determines:
+   - New files (not in database)
+   - Modified files (different SHA hash)
+   - Deleted files (in database but not in request)
+   - Unchanged files (same SHA hash)
+4. Sync summary is displayed
+5. Only new/modified files are uploaded
+6. Deleted files are removed by the API
+7. CLI waits for markdown files to be processed
+8. Site URL is displayed
+
+**When to use sync vs publish:**
+
+- **Use `publish`** for initial site creation or complete site replacement
+- **Use `sync`** for updates to existing sites
 
 ### Site Management
 
@@ -166,7 +223,7 @@ The CLI automatically ignores common non-content files and directories:
 - `.env*`, `*.log`
 - `.next/`, `.vercel/`, `.turbo/`
 
-If `.gitignore` file is present in the published folder, it will also ignore files matched by it.
+If `.gitignore` file is present in the published folder, the Flowershow CLI will also ignore files matched by it.
 
 ## Site URLs
 
@@ -200,6 +257,15 @@ A site with that name already exists. You can:
 - Delete it first: `flowershow delete <name>`
 - Rename your file/folder
 - Use `flowershow list` to see all existing sites
+- **Or use `flowershow sync`** to update an existing site incrementally
+
+### "Site not found" (when using sync)
+
+The sync command requires the site to already exist. If you get this error:
+
+- Use `flowershow publish` to create the site first
+- Check the site name with `flowershow list`
+- Specify the correct site name with `--name`
 
 ### Files still processing after timeout
 
@@ -207,7 +273,7 @@ The site is live, but some pages may not be ready yet. The Cloudflare worker pro
 
 ## Architecture
 
-All CLI commands communicate with the FlowerShow API:
+All CLI commands communicate with the Flowershow API:
 
 - **Authentication**: OAuth device flow endpoints
 - **Site Management**: Create, list, and delete sites
@@ -219,7 +285,7 @@ All CLI commands communicate with the FlowerShow API:
 - **Token Storage**: Authentication tokens are stored in `~/.flowershow/token.json`
 - **Token Format**: CLI tokens use the `fs_cli_` prefix
 - **Token Expiration**: Tokens do not expire by default
-- **Token Revocation**: Revoke tokens from the FlowerShow dashboard or via `flowershow auth logout`
+- **Token Revocation**: Revoke tokens from the [Flowershow dashboard](https://cloud.flowershow.app/tokens) or via `flowershow auth logout`
 - **Secure Uploads**: Files are uploaded using time-limited presigned URLs
 - **No Credentials**: CLI never stores database or storage credentials
 
@@ -251,7 +317,8 @@ APP_URL="http://my.localhost:3000"
 
 ```bash
 pnpm dev auth login
-pnpm dev publish ...
+pnpm dev publish ./my-notes
+pnpm dev sync ./my-notes
 ```
 
 You can also build the project, link it globally and use it as you normally would the npm-installed version:

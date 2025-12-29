@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import ora from "ora";
-import { getAuthenticatedUser, requireAuth } from "../auth.js";
+import { requireAuth } from "../auth.js";
 import { getSites } from "../api-client.js";
 import { displayError, formatDate, getSiteUrl } from "../utils.js";
 import { API_URL } from "../const.js";
@@ -10,13 +10,9 @@ import { API_URL } from "../const.js";
  */
 export async function listCommand(): Promise<void> {
   try {
-    // Check authentication first
-    requireAuth();
+    const user = await requireAuth();
 
     const spinner = ora("Fetching sites...").start();
-
-    // Get authenticated user
-    const user = await getAuthenticatedUser();
 
     // Get sites from API
     const sitesData = await getSites();

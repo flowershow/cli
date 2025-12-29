@@ -1,36 +1,9 @@
 import chalk from "chalk";
 import ora from "ora";
 import { confirm } from "@inquirer/prompts";
-import { isAuthenticated, getUserInfo, getToken } from "../auth.js";
+import { requireAuth } from "../auth.js";
 import { getSites, deleteSite } from "../api-client.js";
 import { displayError, getSiteUrl, getDashboardUrl } from "../utils.js";
-import { API_URL } from "../const.js";
-
-/**
- * Check if user is authenticated, exit if not
- */
-function requireAuth(): void {
-  if (!isAuthenticated()) {
-    displayError(
-      "You must be authenticated to use this command.\n" +
-        "Run `flowershow auth login` to authenticate."
-    );
-    process.exit(1);
-  }
-}
-
-/**
- * Get authenticated user info
- */
-async function getAuthenticatedUser() {
-  const tokenData = getToken();
-  if (!tokenData) {
-    throw new Error("Not authenticated");
-  }
-
-  const userInfo = await getUserInfo(API_URL, tokenData.token);
-  return userInfo;
-}
 
 /**
  * Delete command - remove a site and all its files
@@ -44,13 +17,9 @@ export async function deleteCommand(projectName: string): Promise<void> {
       process.exit(1);
     }
 
-    // Check authentication first
-    requireAuth();
+    const user = await requireAuth();
 
     const spinner = ora(`Looking for site '${projectName}'...`).start();
-
-    // Get authenticated user
-    const user = await getAuthenticatedUser();
 
     // Get all sites to find the one to delete
     const sitesData = await getSites();

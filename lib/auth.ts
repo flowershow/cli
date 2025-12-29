@@ -80,15 +80,6 @@ export async function removeToken(): Promise<void> {
 }
 
 /**
- * Check if user is authenticated
- * @returns true if authenticated, false otherwise
- */
-export function isAuthenticated(): boolean {
-  const tokenData = getToken();
-  return tokenData !== null && !!tokenData.token;
-}
-
-/**
  * Get authorization header for API requests
  * @returns Headers object or null if not authenticated
  */
@@ -182,42 +173,32 @@ export async function pollForToken(
 }
 
 /**
- * Check if user is authenticated, exit if not
+ * Check if user is authenticated
+ * @returns User info
  */
-export function requireAuth(): void {
-  if (!isAuthenticated()) {
+export async function requireAuth(): Promise<UserInfo> {
+  try {
+    const tokenData = getToken();
+    if (!tokenData) {
+      throw new Error("Not authenticated");
+    }
+    return await getUserInfo(tokenData.token);
+  } catch (error) {
     displayError(
       "You must be authenticated to use this command.\n" +
         "Run `flowershow auth login` to authenticate."
     );
-    process.exit(1);
+    process.exit(0);
   }
-}
-
-/**
- * Get authenticated user info
- */
-export async function getAuthenticatedUser(): Promise<UserInfo> {
-  const tokenData = getToken();
-  if (!tokenData) {
-    throw new Error("Not authenticated");
-  }
-
-  const userInfo = await getUserInfo(API_URL, tokenData.token);
-  return userInfo;
 }
 
 /**
  * Get user info from API
- * @param apiUrl - Base API URL
  * @param token - CLI token
  * @returns User info
  */
-export async function getUserInfo(
-  apiUrl: string,
-  token: string
-): Promise<UserInfo> {
-  const response = await fetch(`${apiUrl}/api/cli/user`, {
+export async function getUserInfo(token: string): Promise<UserInfo> {
+  const response = await fetch(`${API_URL}/api/cli/user`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

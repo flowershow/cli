@@ -1,4 +1,4 @@
-import { getAuthHeaders, isAuthenticated } from "./auth.js";
+import { getAuthHeaders } from "./auth.js";
 import { API_URL } from "./const.js";
 
 interface Site {
@@ -42,11 +42,20 @@ interface UploadUrl {
   path: string;
   uploadUrl: string;
   blobId: string;
+  contentType: string;
 }
 
-interface GetUploadUrlsResponse {
+interface SyncFilesResponse {
   uploadUrls: UploadUrl[];
+  deleted: string[];
+  unchanged: string[];
+  summary: {
+    toUpload: number;
+    toDelete: number;
+    unchanged: number;
+  };
   expiresIn: number;
+  dryRun?: boolean;
 }
 
 interface BlobStatus {
@@ -110,7 +119,9 @@ export async function createSite(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       error.message || `Failed to create site: ${response.statusText}`
     );
@@ -127,7 +138,9 @@ export async function getSites(): Promise<GetSitesResponse> {
   const response = await apiRequest("/api/cli/site/get-all");
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       error.message || `Failed to fetch sites: ${response.statusText}`
     );
@@ -145,7 +158,9 @@ export async function getSiteById(siteId: string): Promise<GetSiteResponse> {
   const response = await apiRequest(`/api/cli/site/${siteId}`);
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       error.message || `Failed to fetch site: ${response.statusText}`
     );
@@ -169,7 +184,9 @@ export async function getSiteByName(
       return null;
     }
 
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       error.message || `Failed to fetch site: ${response.statusText}`
     );
@@ -189,7 +206,9 @@ export async function deleteSite(siteId: string): Promise<DeleteSiteResponse> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       error.message || `Failed to delete site: ${response.statusText}`
     );
@@ -199,16 +218,19 @@ export async function deleteSite(siteId: string): Promise<DeleteSiteResponse> {
 }
 
 /**
- * Get presigned URLs for uploading files
+ * Sync files with the server (replaces getUploadUrls for new workflows)
  * @param siteId - Site ID
  * @param files - Array of file metadata
- * @returns Upload URLs data
+ * @param dryRun - If true, only returns what would happen without making changes
+ * @returns Sync plan with upload URLs, deleted files, and unchanged files
  */
-export async function getUploadUrls(
+export async function syncFiles(
   siteId: string,
-  files: FileMetadata[]
-): Promise<GetUploadUrlsResponse> {
-  const response = await apiRequest(`/api/cli/site/${siteId}/upload-urls`, {
+  files: FileMetadata[],
+  dryRun: boolean = false
+): Promise<SyncFilesResponse> {
+  const url = `/api/cli/site/${siteId}/sync${dryRun ? '?dryRun=true' : ''}`;
+  const response = await apiRequest(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -217,13 +239,15 @@ export async function getUploadUrls(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
-      error.message || `Failed to get upload URLs: ${response.statusText}`
+      error.message || `Failed to sync files: ${response.statusText}`
     );
   }
 
-  return (await response.json()) as GetUploadUrlsResponse;
+  return (await response.json()) as SyncFilesResponse;
 }
 
 /**
@@ -258,23 +282,19 @@ export async function uploadToR2(
  * @param siteId - Site ID
  * @returns Site status data
  */
-export async function getSiteStatus(siteId: string): Promise<SiteStatusResponse> {
+export async function getSiteStatus(
+  siteId: string
+): Promise<SiteStatusResponse> {
   const response = await apiRequest(`/api/cli/site/${siteId}/status`);
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       error.message || `Failed to get site status: ${response.statusText}`
     );
   }
 
   return (await response.json()) as SiteStatusResponse;
-}
-
-/**
- * Check if user is authenticated and has valid token
- * @returns true if authenticated
- */
-export function hasValidAuth(): boolean {
-  return isAuthenticated();
 }

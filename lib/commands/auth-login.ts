@@ -78,22 +78,18 @@ export async function authLoginCommand(): Promise<void> {
       expires_in
     );
 
-    spinner.text = "Fetching user information...";
-
     // Step 4: Get user info
-    const userInfo = await getUserInfo(API_URL, accessToken);
+    const user = await getUserInfo(accessToken);
 
     // Step 5: Save token
-    saveToken(accessToken, userInfo.username || userInfo.email || "user");
+    saveToken(accessToken, user.username || user.email || "user");
 
     spinner.succeed("Successfully authenticated!");
 
     // Step 6: Display success
     console.log(
       chalk.gray(
-        `Logged in as: ${chalk.cyan(
-          userInfo.username || userInfo.email || "user"
-        )}`
+        `Logged in as: ${chalk.cyan(user.username || user.email || "user")}`
       )
     );
     console.log(
