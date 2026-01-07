@@ -9,7 +9,10 @@ import { deleteCommand } from "./lib/commands/delete.js";
 import { authLoginCommand } from "./lib/commands/auth-login.js";
 import { authLogoutCommand } from "./lib/commands/auth-logout.js";
 import { authStatusCommand } from "./lib/commands/auth-status.js";
-import packageJson from "./package.json";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const packageJson = require("./package.json");
 
 const program = new Command();
 

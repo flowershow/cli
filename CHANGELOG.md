@@ -1,5 +1,11 @@
 # flowershow
 
+## 0.2.7
+
+### Patch Changes
+
+- Fix version display.
+
 ## 0.2.6
 
 ### Patch Changes
