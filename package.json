@@ -1,6 +1,6 @@
 {
   "name": "flowershow",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "CLI tool for publishing to FlowerShow",
   "type": "module",
   "main": "./dist/cli.js",
@@ -8,7 +8,7 @@
     "flowershow": "./dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp package.json dist/",
     "dev": "tsx cli.ts",
     "prepublishOnly": "pnpm run build",
     "release": "changeset publish"

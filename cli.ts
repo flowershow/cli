@@ -9,13 +9,14 @@ import { deleteCommand } from "./lib/commands/delete.js";
 import { authLoginCommand } from "./lib/commands/auth-login.js";
 import { authLogoutCommand } from "./lib/commands/auth-logout.js";
 import { authStatusCommand } from "./lib/commands/auth-status.js";
+import packageJson from "./package.json" with { type: "json" };
 
 const program = new Command();
 
 program
   .name("flowershow")
   .description("CLI tool for publishing to FlowerShow")
-  .version(process.env.npm_package_version || "dev");
+  .version(packageJson.version);
 
 // Auth commands
 const auth = program
