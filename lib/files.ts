@@ -86,6 +86,13 @@ function getExtension(filePath: string): string {
 }
 
 /**
+ * Normalize path to use forward slashes (for consistency across platforms)
+ */
+function normalizePath(path: string): string {
+  return path.split(sep).join("/");
+}
+
+/**
  * Recursively scan a directory and return all files
  */
 function scanDirectory(dirPath: string, baseDir: string = dirPath): string[] {
@@ -158,7 +165,7 @@ export function discoverFiles(inputPaths: string | string[]): FileInfo[] {
 
       allFiles.push({
         originalPath: inputPath,
-        path: targetPath,
+        path: normalizePath(targetPath),
         size: stats.size,
         sha: calculateSha(content),
         extension,
@@ -182,7 +189,7 @@ export function discoverFiles(inputPaths: string | string[]): FileInfo[] {
 
         allFiles.push({
           originalPath: filePath,
-          path: relativePath,
+          path: normalizePath(relativePath),
           size: fileStats.size,
           sha: calculateSha(content),
           extension,
