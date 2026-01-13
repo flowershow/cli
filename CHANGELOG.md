@@ -1,5 +1,11 @@
 # flowershow
 
+## 0.2.12
+
+### Patch Changes
+
+- Use content type returned from the API when uploading files using presigned URLs.
+
 ## 0.2.11
 
 ### Patch Changes

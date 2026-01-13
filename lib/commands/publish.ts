@@ -25,39 +25,6 @@ interface UploadResult {
 }
 
 /**
- * Get content type based on file extension
- */
-function getContentType(extension: string): string {
-  const contentTypes: Record<string, string> = {
-    md: "text/markdown",
-    mdx: "text/markdown",
-    csv: "text/csv",
-    geojson: "application/geo+json",
-    json: "application/json",
-    yaml: "application/yaml",
-    yml: "application/yaml",
-    base: "application/yaml",
-    css: "text/css",
-    jpeg: "image/jpeg",
-    jpg: "image/jpeg",
-    png: "image/png",
-    gif: "image/gif",
-    svg: "image/svg+xml",
-    ico: "image/x-icon",
-    webp: "image/webp",
-    avif: "image/avif",
-    pdf: "application/pdf",
-    mp4: "video/mp4",
-    webm: "video/webm",
-    aac: "audio/aac",
-    mp3: "audio/mpeg",
-    opus: "audio/opus",
-  };
-
-  return contentTypes[extension] || "application/octet-stream";
-}
-
-/**
  * Publish command - upload files to FlowerShow
  * @param inputPaths - Path(s) to the file(s) or folder to publish
  * @param overwrite - Whether to overwrite existing site
@@ -172,8 +139,11 @@ export async function publishCommand(
       }
 
       try {
-        const contentType = getContentType(file.extension);
-        await uploadToR2(uploadInfo.uploadUrl, file.content, contentType);
+        await uploadToR2(
+          uploadInfo.uploadUrl,
+          file.content,
+          uploadInfo.contentType
+        );
         uploadResults.push({ path: file.path, success: true });
         uploadBar.increment();
       } catch (error) {
