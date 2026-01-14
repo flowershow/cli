@@ -1,18 +1,20 @@
-# FlowerShow CLI (Alpha 🚧)
+# FlowerShow CLI (Beta 🚧)
 
 A CLI tool for publishing Markdown files and folders directly to FlowerShow with OAuth authentication.
+
+> **Note:** This package was previously named `flowershow`. If you're migrating from the old package, see the [Migration Guide](MIGRATION.md).
 
 ## Installation
 
 ```bash
-npm install -g flowershow@latest
+npm install -g flowershow-publish@latest
 ```
 
-Then use the `flowershow` command anywhere:
+Then use the `publish` command anywhere:
 
 ```bash
-flowershow auth login
-flowershow publish ./my-notes
+publish auth login
+publish ./my-notes
 ```
 
 ## Quick Start
@@ -22,7 +24,7 @@ flowershow publish ./my-notes
 Before using any commands, you must authenticate:
 
 ```bash
-flowershow auth login
+publish auth login
 ```
 
 This will:
@@ -35,55 +37,55 @@ This will:
 
 ```bash
 # Publish a folder
-flowershow publish ./my-notes
+publish ./my-notes
 
 # Publish a single file
-flowershow publish ./my-note.md
+publish ./my-note.md
 ```
 
 ### 3. Sync after changes
 
 ```bash
 # Sync a folder site
-flowershow sync ./my-notes
+publish sync ./my-notes
 
 # Sync a single file site
-flowershow sync ./my-note.md
+publish sync ./my-note.md
 ```
 
 ## Commands
 
 ### Authentication
 
-#### `flowershow auth login`
+#### `publish auth login`
 
 Authenticate with FlowerShow via browser OAuth flow.
 
 ```bash
-flowershow auth login
+publish auth login
 ```
 
-#### `flowershow auth status`
+#### `publish auth status`
 
 Check your current authentication status.
 
 ```bash
-flowershow auth status
+publish auth status
 ```
 
-#### `flowershow auth logout`
+#### `publish auth logout`
 
 Remove your stored authentication token.
 
 ```bash
-flowershow auth logout
+publish auth logout
 ```
 
 See [Authentication Documentation](docs/authentication.md) for detailed information.
 
 ### Publishing
 
-#### `flowershow publish <path> [morePaths...] [options]`
+#### `publish <path> [morePaths...] [options]`
 
 Publish files or folders to FlowerShow.
 
@@ -96,22 +98,22 @@ Publish files or folders to FlowerShow.
 
 ```bash
 # Publish a single markdown file
-flowershow publish ./my-note.md
+publish ./my-note.md
 
 # Publish multiple files
-flowershow publish ./intro.md ./chapter1.md ./chapter2.md
+publish ./intro.md ./chapter1.md ./chapter2.md
 
 # Publish a folder
-flowershow publish ./my-notes
+publish ./my-notes
 
 # Overwrite an existing site
-flowershow publish ./my-notes --overwrite
+publish ./my-notes --overwrite
 
 # Publish with a custom site name
-flowershow publish ./my-notes --name my-custom-site
+publish ./my-notes --name my-custom-site
 
 # Combine options
-flowershow publish ./my-notes --name my-custom-site --overwrite
+publish ./my-notes --name my-custom-site --overwrite
 ```
 
 **What happens:**
@@ -126,24 +128,24 @@ flowershow publish ./my-notes --name my-custom-site --overwrite
 
 **Single file behavior:**
 
-- Filename becomes the project name (e.g. `flowershow publish about.md` will create a site named `about`)
+- Filename becomes the project name (e.g. `publish about.md` will create a site named `about`)
 - File is saved as `README.md` (or `README.mdx` depending on the original file extension)
 - Site accessible at `/@{username}/{filename}` (e.g. `/@johndoe/about`)
 
 **Multiple files behavior:**
 
-- First filename becomes the project name (e.g. `flowershow publish about.md team.md abc.md` will create a site named `about`)
+- First filename becomes the project name (e.g. `publish about.md team.md abc.md` will create a site named `about`)
 - First file is saved as `README.md` (or `README.mdx`)
 - Subsequent files keep their original names
 - Site accessible at `/@{username}/{first-filename}` (e.g. `/@johndoe/about`)
 
 **Folder behavior:**
 
-- Folder name becomes the project name (e.g. `flowershow publish my-digital-garden/blog` will create a site named `blog`)
+- Folder name becomes the project name (e.g. `publish my-digital-garden/blog` will create a site named `blog`)
 - All files maintain their relative paths
 - Site accessible at `/@{username}/{foldername}` (e.g. `/@johndoe/blog`)
 
-#### `flowershow sync <path> [options]`
+#### `publish sync <path> [options]`
 
 Sync changes to an existing published site. Only uploads new or modified files, and deletes files that no longer exist locally.
 
@@ -157,19 +159,19 @@ Sync changes to an existing published site. Only uploads new or modified files, 
 
 ```bash
 # Sync changes to a folder
-flowershow sync ./my-notes
+publish sync ./my-notes
 
 # Preview changes without syncing
-flowershow sync ./my-notes --dry-run
+publish sync ./my-notes --dry-run
 
 # Show detailed file lists including unchanged files
-flowershow sync ./my-notes --verbose
+publish sync ./my-notes --verbose
 
 # Sync to a specific site name
-flowershow sync ./my-notes --name my-custom-site
+publish sync ./my-notes --name my-custom-site
 
 # Combine options
-flowershow sync ./my-notes --dry-run --verbose
+publish sync ./my-notes --dry-run --verbose
 ```
 
 **What happens:**
@@ -194,22 +196,22 @@ flowershow sync ./my-notes --dry-run --verbose
 
 ### Site Management
 
-#### `flowershow list`
+#### `publish list`
 
 List all sites published by your authenticated user.
 
 ```bash
-flowershow list
+publish list
 ```
 
 Shows site names, URLs, and timestamps.
 
-#### `flowershow delete <project-name>`
+#### `publish delete <project-name>`
 
 Delete a site and all its files.
 
 ```bash
-flowershow delete my-notes
+publish delete my-notes
 ```
 
 Removes the site and all its files via the FlowerShow API.
@@ -239,32 +241,32 @@ Where `{username}` is your authenticated username.
 
 ### "You must be authenticated to use this command"
 
-Run `flowershow auth login` to authenticate.
+Run `publish auth login` to authenticate.
 
 ### "Authentication token is invalid or expired"
 
 Your token may have been revoked. Re-authenticate:
 
 ```bash
-flowershow auth login
+publish auth login
 ```
 
 ### "Site already exists"
 
 A site with that name already exists. You can:
 
-- Use the `--overwrite` flag: `flowershow publish <path> --overwrite`
-- Delete it first: `flowershow delete <name>`
+- Use the `--overwrite` flag: `publish <path> --overwrite`
+- Delete it first: `publish delete <name>`
 - Rename your file/folder
-- Use `flowershow list` to see all existing sites
-- **Or use `flowershow sync`** to update an existing site incrementally
+- Use `publish list` to see all existing sites
+- **Or use `publish sync`** to update an existing site incrementally
 
 ### "Site not found" (when using sync)
 
 The sync command requires the site to already exist. If you get this error:
 
-- Use `flowershow publish` to create the site first
-- Check the site name with `flowershow list`
+- Use `publish` to create the site first
+- Check the site name with `publish list`
 - Specify the correct site name with `--name`
 
 ### Files still processing after timeout
@@ -317,7 +319,7 @@ APP_URL="http://my.localhost:3000"
 
 ```bash
 pnpm dev auth login
-pnpm dev publish ./my-notes
+pnpm dev ./my-notes
 pnpm dev sync ./my-notes
 ```
 
@@ -326,5 +328,5 @@ You can also build the project, link it globally and use it as you normally woul
 ```bash
 pnpm build
 npm link
-flowershow ...
+publish ...
 ```

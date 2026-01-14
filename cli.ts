@@ -14,9 +14,32 @@ import packageJson from "./package.json" with { type: "json" };
 const program = new Command();
 
 program
-  .name("flowershow")
+  .name("publish")
   .description("CLI tool for publishing to FlowerShow")
   .version(packageJson.version);
+
+// Default action: publish files/folders
+program
+  .argument("[path]", "File or folder to publish")
+  .argument("[morePaths...]", "Additional files to publish")
+  .option("--overwrite", "Overwrite existing site if it already exists")
+  .option("--name <siteName>", "Custom name for the site")
+  .action(
+    async (
+      path: string | undefined,
+      morePaths: string[],
+      options: { overwrite?: boolean; name?: string }
+    ) => {
+      // If no path provided and no subcommand, show help
+      if (!path) {
+        program.help();
+        return;
+      }
+      console.log(chalk.bold("\n💐 FlowerShow CLI - Publish\n"));
+      const paths = [path, ...morePaths];
+      await publishCommand(paths, options.overwrite || false, options.name);
+    }
+  );
 
 // Auth commands
 const auth = program
@@ -51,22 +74,6 @@ auth
   });
 
 // Site management commands
-program
-  .command("publish <path> [morePaths...]")
-  .description("Publish file(s) or folder to FlowerShow")
-  .option("--overwrite", "Overwrite existing site if it already exists")
-  .option("--name <siteName>", "Custom name for the site")
-  .action(
-    async (
-      path: string,
-      morePaths: string[],
-      options: { overwrite?: boolean; name?: string }
-    ) => {
-      console.log(chalk.bold("\n💐 FlowerShow CLI - Publish\n"));
-      const paths = [path, ...morePaths];
-      await publishCommand(paths, options.overwrite || false, options.name);
-    }
-  );
 
 program
   .command("sync <path>")
