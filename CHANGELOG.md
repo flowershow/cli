@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 0.4.0
+
+### Minor Changes
+
+- **BREAKING CHANGE - Package Renamed to Scoped Package**
+
+  This release renames the package from `flowershow-publish` to `@flowershow/publish` (scoped package).
+
+## What Changed
+
+### Package Name
+
+- NPM package: `flowershow-publish` → `@flowershow/publish`
+- Binary command: `publish` (unchanged)
+
+See [MIGRATION.md](MIGRATION.md) for complete migration instructions.
+
 ## 0.3.0
 
 ### Minor Changes

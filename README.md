@@ -2,12 +2,12 @@
 
 A CLI tool for publishing Markdown files and folders directly to FlowerShow with OAuth authentication.
 
-> **Note:** This package was previously named `flowershow`. If you're migrating from the old package, see the [Migration Guide](MIGRATION.md).
+> **Note:** This package was previously named `flowershow` (and `flowershow-publish`). If you're migrating from the old package, see the [Migration Guide](MIGRATION.md).
 
 ## Installation
 
 ```bash
-npm install -g flowershow-publish@latest
+npm install -g @flowershow/publish@latest
 ```
 
 Then use the `publish` command anywhere:
