@@ -129,20 +129,17 @@ publish ./my-notes --name my-custom-site --overwrite
 **Single file behavior:**
 
 - Filename becomes the project name (e.g. `publish about.md` will create a site named `about`)
-- File is saved as `README.md` (or `README.mdx` depending on the original file extension)
+- File keeps its original name
 - Site accessible at `/@{username}/{filename}` (e.g. `/@johndoe/about`)
 
 **Multiple files behavior:**
 
 - First filename becomes the project name (e.g. `publish about.md team.md abc.md` will create a site named `about`)
-- First file is saved as `README.md` (or `README.mdx`)
-- Subsequent files keep their original names
 - Site accessible at `/@{username}/{first-filename}` (e.g. `/@johndoe/about`)
 
 **Folder behavior:**
 
 - Folder name becomes the project name (e.g. `publish my-digital-garden/blog` will create a site named `blog`)
-- All files maintain their relative paths
 - Site accessible at `/@{username}/{foldername}` (e.g. `/@johndoe/blog`)
 
 #### `publish sync <path> [options]`

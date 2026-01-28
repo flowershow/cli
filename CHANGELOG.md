@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.4.1
+
+### Patch Changes
+
+- Files are no longer renamed to README.md - they keep their original filenames. Project name is still inferred from the first file or folder name. The API now handles file organization.
+- HTML files can be published too.
+
 ## 0.4.0
 
 ### Minor Changes
@@ -28,12 +35,10 @@ See [MIGRATION.md](MIGRATION.md) for complete migration instructions.
   ## What Changed
 
   ### Package Name
-
   - NPM package: `flowershow` → `flowershow-publish`
   - Binary command: `flowershow` → `publish`
 
   ### Command Structure
-
   - **Main publish command is now default**: `publish <path>` (previously `flowershow publish <path>`)
   - **All other commands updated**: Use `publish` as the base command
     - `publish auth login` (was `flowershow auth login`)

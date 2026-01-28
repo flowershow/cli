@@ -63,7 +63,7 @@ function loadGitignore(baseDir: string): ReturnType<typeof ignore> {
  */
 function shouldIncludeFile(
   filePath: string,
-  ig: ReturnType<typeof ignore>
+  ig: ReturnType<typeof ignore>,
 ): boolean {
   // Normalize path separators for consistent matching
   const normalizedPath = filePath.split(sep).join("/");
@@ -146,21 +146,15 @@ export function discoverFiles(inputPaths: string | string[]): FileInfo[] {
     const isFirstPath = i === 0;
 
     if (stats.isFile()) {
-      // Single file
+      // Single file - keep original filename
       const extension = getExtension(inputPath);
       const fileName = basename(inputPath, extname(inputPath));
       const content = readFileSync(inputPath);
+      const targetPath = basename(inputPath);
 
-      // First file becomes README, others keep their names
-      let targetPath: string;
-
+      // Infer project name from first file
       if (isFirstPath) {
-        // First file is saved as README with original extension
-        targetPath = extension === "mdx" ? "README.mdx" : "README.md";
         projectName = fileName;
-      } else {
-        // Subsequent files keep their original names
-        targetPath = basename(inputPath);
       }
 
       allFiles.push({
@@ -198,7 +192,7 @@ export function discoverFiles(inputPaths: string | string[]): FileInfo[] {
       }
     } else {
       throw new Error(
-        `Invalid path: ${inputPath} is neither a file nor a directory`
+        `Invalid path: ${inputPath} is neither a file nor a directory`,
       );
     }
   }
@@ -233,9 +227,13 @@ export function validateFiles(files: FileInfo[]): boolean {
     throw new Error("No files found to publish");
   }
 
-  const hasMarkdown = files.some((f) => ["md", "mdx"].includes(f.extension));
-  if (!hasMarkdown) {
-    console.warn("Warning: No markdown files found. The site will be empty.");
+  const hasMarkdownOrHtml = files.some((f) =>
+    ["md", "mdx", "html"].includes(f.extension),
+  );
+  if (!hasMarkdownOrHtml) {
+    console.warn(
+      "Warning: No markdown or html files found. The site will be empty.",
+    );
   }
 
   return true;
