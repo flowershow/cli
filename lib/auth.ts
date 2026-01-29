@@ -186,7 +186,7 @@ export async function requireAuth(): Promise<UserInfo> {
   } catch (error) {
     displayError(
       "You must be authenticated to use this command.\n" +
-        "Run `flowershow auth login` to authenticate.",
+        "Run `publish auth login` to authenticate.",
     );
     process.exit(0);
   }

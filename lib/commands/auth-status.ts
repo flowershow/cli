@@ -12,7 +12,7 @@ export async function authStatusCommand(): Promise<void> {
 
     if (!tokenData) {
       console.log(chalk.yellow("\n✗ Not authenticated\n"));
-      console.log(chalk.gray("Run `flowershow auth login` to authenticate.\n"));
+      console.log(chalk.gray("Run `publish auth login` to authenticate.\n"));
       return;
     }
 
@@ -32,9 +32,7 @@ export async function authStatusCommand(): Promise<void> {
       );
     } catch (error) {
       spinner.fail(chalk.red("Authentication token is invalid or expired"));
-      console.log(
-        chalk.gray("Run `flowershow auth login` to re-authenticate.\n"),
-      );
+      console.log(chalk.gray("Run `publish auth login` to re-authenticate.\n"));
     }
   } catch (error) {
     if (error instanceof Error) {

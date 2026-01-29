@@ -284,7 +284,7 @@ All CLI commands communicate with the Flowershow API:
 - **Token Storage**: Authentication tokens are stored in `~/.flowershow/token.json`
 - **Token Format**: CLI tokens use the `fs_cli_` prefix
 - **Token Expiration**: Tokens do not expire by default
-- **Token Revocation**: Revoke tokens from the [Flowershow dashboard](https://cloud.flowershow.app/tokens) or via `flowershow auth logout`
+- **Token Revocation**: Revoke tokens from the [Flowershow dashboard](https://cloud.flowershow.app/tokens) or via `publish auth logout`
 - **Secure Uploads**: Files are uploaded using time-limited presigned URLs
 - **No Credentials**: CLI never stores database or storage credentials
 
