@@ -1,5 +1,64 @@
+import chalk from "chalk";
+import packageJson from "../package.json" with { type: "json" };
 import { getAuthHeaders } from "./auth.js";
 import { API_URL } from "./const.js";
+
+interface OutdatedClientError {
+  error: "client_outdated";
+  message: string;
+  currentVersion: string;
+  minimumVersion: string;
+}
+
+/**
+ * Check if response is an outdated client error and handle it
+ * Exits the process if the CLI is outdated
+ */
+async function handleOutdatedClient(response: Response): Promise<void> {
+  if (response.status === 426) {
+    const data = (await response
+      .clone()
+      .json()
+      .catch(() => ({}))) as OutdatedClientError;
+    if (data.error === "client_outdated") {
+      const lines = [
+        "",
+        chalk.red.bold(
+          `  !  Your FlowerShow CLI is outdated (v${data.currentVersion}) `,
+        ),
+        "",
+        `  This version no longer works with the FlowerShow API.`,
+        `  Please upgrade to v${data.minimumVersion} or newer.`,
+        "",
+        chalk.cyan(`  → npm install -g @flowershow/publish`),
+        "",
+      ];
+
+      const width = 56;
+      const top = chalk.red(`╔${"═".repeat(width)}╗`);
+      const bottom = chalk.red(`╚${"═".repeat(width)}╝`);
+      const border = chalk.red("║");
+
+      console.error();
+      console.error(top);
+      for (const line of lines) {
+        const padding = width - stripAnsi(line).length;
+        console.error(
+          `${border}${line}${" ".repeat(Math.max(0, padding))}${border}`,
+        );
+      }
+      console.error(bottom);
+      console.error();
+
+      process.exit(1);
+    }
+  }
+}
+
+/** Strip ANSI codes for length calculation */
+function stripAnsi(str: string): string {
+  return str.replace(/\x1b\[[0-9;]*m/g, "");
+}
 
 interface Site {
   id: string;
@@ -93,14 +152,19 @@ export async function apiRequest(
 
   const url = `${API_URL}${endpoint}`;
   const headers = {
+    "X-Flowershow-CLI-Version": packageJson.version,
     ...options.headers,
     ...(authHeaders || {}),
   };
 
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
+
+  await handleOutdatedClient(response);
+
+  return response;
 }
 
 /**
