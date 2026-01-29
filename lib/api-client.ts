@@ -45,16 +45,17 @@ interface UploadUrl {
   contentType: string;
 }
 
-interface SyncFilesResponse {
-  uploadUrls: UploadUrl[];
+export interface SyncFilesResponse {
+  toUpload: UploadUrl[];
+  toUpdate: UploadUrl[];
   deleted: string[];
   unchanged: string[];
   summary: {
     toUpload: number;
-    toDelete: number;
+    toUpdate: number;
+    deleted: number;
     unchanged: number;
   };
-  expiresIn: number;
   dryRun?: boolean;
 }
 
@@ -78,13 +79,13 @@ interface SiteStatusResponse {
 
 /**
  * Make an authenticated API request
- * @param endpoint - API endpoint (e.g., '/api/cli/site')
+ * @param endpoint - API endpoint (e.g., '/api/sites')
  * @param options - Fetch options
  * @returns Response object
  */
 export async function apiRequest(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   const authHeaders = getAuthHeaders();
 
@@ -108,9 +109,9 @@ export async function apiRequest(
  */
 export async function createSite(
   projectName: string,
-  overwrite: boolean = false
+  overwrite: boolean = false,
 ): Promise<CreateSiteResponse> {
-  const response = await apiRequest("/api/cli/site", {
+  const response = await apiRequest("/api/sites", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -123,7 +124,7 @@ export async function createSite(
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to create site: ${response.statusText}`
+      error.message || `Failed to create site: ${response.statusText}`,
     );
   }
 
@@ -135,14 +136,14 @@ export async function createSite(
  * @returns Sites data
  */
 export async function getSites(): Promise<GetSitesResponse> {
-  const response = await apiRequest("/api/cli/site/get-all");
+  const response = await apiRequest("/api/sites");
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as {
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to fetch sites: ${response.statusText}`
+      error.message || `Failed to fetch sites: ${response.statusText}`,
     );
   }
 
@@ -155,14 +156,14 @@ export async function getSites(): Promise<GetSitesResponse> {
  * @returns Site data
  */
 export async function getSiteById(siteId: string): Promise<GetSiteResponse> {
-  const response = await apiRequest(`/api/cli/site/${siteId}`);
+  const response = await apiRequest(`/api/sites/id/${siteId}`);
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as {
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to fetch site: ${response.statusText}`
+      error.message || `Failed to fetch site: ${response.statusText}`,
     );
   }
 
@@ -171,13 +172,15 @@ export async function getSiteById(siteId: string): Promise<GetSiteResponse> {
 
 /**
  * Get a specific site by name
+ * @param username - Username of the site owner
  * @param siteName - Site name
  * @returns Site data or null if not found
  */
 export async function getSiteByName(
-  siteName: string
+  username: string,
+  siteName: string,
 ): Promise<GetSiteResponse | null> {
-  const response = await apiRequest(`/api/cli/site/by-name/${siteName}`);
+  const response = await apiRequest(`/api/sites/${username}/${siteName}`);
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -188,7 +191,7 @@ export async function getSiteByName(
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to fetch site: ${response.statusText}`
+      error.message || `Failed to fetch site: ${response.statusText}`,
     );
   }
 
@@ -201,7 +204,7 @@ export async function getSiteByName(
  * @returns Delete result
  */
 export async function deleteSite(siteId: string): Promise<DeleteSiteResponse> {
-  const response = await apiRequest(`/api/cli/site/${siteId}`, {
+  const response = await apiRequest(`/api/sites/id/${siteId}`, {
     method: "DELETE",
   });
 
@@ -210,7 +213,7 @@ export async function deleteSite(siteId: string): Promise<DeleteSiteResponse> {
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to delete site: ${response.statusText}`
+      error.message || `Failed to delete site: ${response.statusText}`,
     );
   }
 
@@ -227,9 +230,9 @@ export async function deleteSite(siteId: string): Promise<DeleteSiteResponse> {
 export async function syncFiles(
   siteId: string,
   files: FileMetadata[],
-  dryRun: boolean = false
+  dryRun: boolean = false,
 ): Promise<SyncFilesResponse> {
-  const url = `/api/cli/site/${siteId}/sync${dryRun ? '?dryRun=true' : ''}`;
+  const url = `/api/sites/id/${siteId}/sync${dryRun ? "?dryRun=true" : ""}`;
   const response = await apiRequest(url, {
     method: "POST",
     headers: {
@@ -243,7 +246,7 @@ export async function syncFiles(
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to sync files: ${response.statusText}`
+      error.message || `Failed to sync files: ${response.statusText}`,
     );
   }
 
@@ -260,7 +263,7 @@ export async function syncFiles(
 export async function uploadToR2(
   uploadUrl: string,
   content: Buffer,
-  contentType: string
+  contentType: string,
 ): Promise<boolean> {
   const response = await fetch(uploadUrl, {
     method: "PUT",
@@ -283,16 +286,16 @@ export async function uploadToR2(
  * @returns Site status data
  */
 export async function getSiteStatus(
-  siteId: string
+  siteId: string,
 ): Promise<SiteStatusResponse> {
-  const response = await apiRequest(`/api/cli/site/${siteId}/status`);
+  const response = await apiRequest(`/api/sites/id/${siteId}/status`);
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as {
       message?: string;
     };
     throw new Error(
-      error.message || `Failed to get site status: ${response.statusText}`
+      error.message || `Failed to get site status: ${response.statusText}`,
     );
   }
 

@@ -198,7 +198,7 @@ export async function requireAuth(): Promise<UserInfo> {
  * @returns User info
  */
 export async function getUserInfo(token: string): Promise<UserInfo> {
-  const response = await fetch(`${API_URL}/api/cli/user`, {
+  const response = await fetch(`${API_URL}/api/user`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

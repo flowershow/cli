@@ -19,30 +19,46 @@ interface UploadResult {
  */
 function displaySyncSummary(
   syncPlan: {
-    uploadUrls: Array<{ path: string }>;
+    toUpload: Array<{ path: string }>;
+    toUpdate: Array<{ path: string }>;
     deleted: string[];
     unchanged: string[];
-    summary: { toUpload: number; toDelete: number; unchanged: number };
+    summary: {
+      toUpload: number;
+      toUpdate: number;
+      deleted: number;
+      unchanged: number;
+    };
   },
   projectName: string,
-  verbose: boolean = false
+  verbose: boolean = false,
 ): void {
   console.log(chalk.bold(`\nSync Summary for '${projectName}':`));
 
-  // Files to upload
+  // Files to upload (new)
   if (syncPlan.summary.toUpload > 0) {
     console.log(
-      chalk.cyan(`  📝 Files to upload: ${syncPlan.summary.toUpload}`)
+      chalk.cyan(`  📝 New files to upload: ${syncPlan.summary.toUpload}`),
     );
-    for (const uploadUrl of syncPlan.uploadUrls) {
+    for (const uploadUrl of syncPlan.toUpload) {
       console.log(chalk.cyan(`    + ${uploadUrl.path}`));
     }
   }
 
-  // Files to delete
-  if (syncPlan.summary.toDelete > 0) {
+  // Files to update (modified)
+  if (syncPlan.summary.toUpdate > 0) {
     console.log(
-      chalk.yellow(`  🗑️  Files to delete: ${syncPlan.summary.toDelete}`)
+      chalk.blue(`  🔄 Files to update: ${syncPlan.summary.toUpdate}`),
+    );
+    for (const updateUrl of syncPlan.toUpdate) {
+      console.log(chalk.blue(`    ~ ${updateUrl.path}`));
+    }
+  }
+
+  // Files to delete
+  if (syncPlan.summary.deleted > 0) {
+    console.log(
+      chalk.yellow(`  🗑️  Files to delete: ${syncPlan.summary.deleted}`),
     );
     for (const deletedPath of syncPlan.deleted) {
       console.log(chalk.yellow(`    - ${deletedPath}`));
@@ -53,17 +69,17 @@ function displaySyncSummary(
   if (syncPlan.summary.unchanged > 0) {
     if (verbose) {
       console.log(
-        chalk.green(`  ✅ Files unchanged: ${syncPlan.summary.unchanged}`)
+        chalk.green(`  ✅ Files unchanged: ${syncPlan.summary.unchanged}`),
       );
       for (const unchangedPath of syncPlan.unchanged) {
         console.log(chalk.gray(`    • ${unchangedPath}`));
       }
     } else {
       console.log(
-        chalk.green(`  ✓ Files unchanged: ${syncPlan.summary.unchanged}`)
+        chalk.green(`  ✓ Files unchanged: ${syncPlan.summary.unchanged}`),
       );
       console.log(
-        chalk.gray(`\nNote: Use --verbose to see all unchanged files`)
+        chalk.gray(`\nNote: Use --verbose to see all unchanged files`),
       );
     }
   }
@@ -73,9 +89,13 @@ function displaySyncSummary(
  * Check if sync plan has any changes
  */
 function hasChanges(syncPlan: {
-  summary: { toUpload: number; toDelete: number };
+  summary: { toUpload: number; toUpdate: number; deleted: number };
 }): boolean {
-  return syncPlan.summary.toUpload > 0 || syncPlan.summary.toDelete > 0;
+  return (
+    syncPlan.summary.toUpload > 0 ||
+    syncPlan.summary.toUpdate > 0 ||
+    syncPlan.summary.deleted > 0
+  );
 }
 
 /**
@@ -84,16 +104,23 @@ function hasChanges(syncPlan: {
 function displaySyncSuccess(
   projectName: string,
   username: string,
-  summary: { toUpload: number; toDelete: number; unchanged: number }
+  summary: {
+    toUpload: number;
+    toUpdate: number;
+    deleted: number;
+    unchanged: number;
+  },
 ): void {
   console.log(chalk.green.bold("\n✅ Sync complete!"));
   console.log(
-    chalk.cyan(`   Site: https://my.flowershow.app/@${username}/${projectName}`)
+    chalk.cyan(
+      `   Site: https://my.flowershow.app/@${username}/${projectName}`,
+    ),
   );
   console.log(
     chalk.gray(
-      `   Uploaded: ${summary.toUpload} | Deleted: ${summary.toDelete} | Unchanged: ${summary.unchanged}`
-    )
+      `   New: ${summary.toUpload} | Updated: ${summary.toUpdate} | Deleted: ${summary.deleted} | Unchanged: ${summary.unchanged}`,
+    ),
   );
 }
 
@@ -108,7 +135,7 @@ export async function syncCommand(
     name?: string;
     dryRun?: boolean;
     verbose?: boolean;
-  } = {}
+  } = {},
 ): Promise<void> {
   try {
     const spinner = ora();
@@ -135,11 +162,11 @@ export async function syncCommand(
     spinner.succeed(`Found ${files.length} file(s) in ${inputPath}`);
 
     // Check if site exists
-    const existingSite = await getSiteByName(projectName);
+    const existingSite = await getSiteByName(user.username!, projectName);
     if (!existingSite) {
       displayError(
         `Site '${projectName}' not found.\n` +
-          `Use 'flowershow publish' to create it first, or specify a different site name with --name.`
+          `Use 'flowershow publish' to create it first, or specify a different site name with --name.`,
       );
       process.exit(1);
     }
@@ -156,7 +183,7 @@ export async function syncCommand(
     const syncPlan = await syncFiles(
       existingSite.site.id,
       fileMetadata,
-      options.dryRun || false
+      options.dryRun || false,
     );
     spinner.stop();
 
@@ -168,8 +195,8 @@ export async function syncCommand(
         chalk.cyan(
           `   Site: https://my.flowershow.app/@${
             user.username || user.email
-          }/${projectName}`
-        )
+          }/${projectName}`,
+        ),
       );
       return;
     }
@@ -181,17 +208,18 @@ export async function syncCommand(
     if (options.dryRun || syncPlan.dryRun) {
       console.log(
         chalk.yellow(
-          "\n🔍 Dry run complete - no changes were made to your site"
-        )
+          "\n🔍 Dry run complete - no changes were made to your site",
+        ),
       );
       console.log(
-        chalk.gray("   Run without --dry-run to apply these changes")
+        chalk.gray("   Run without --dry-run to apply these changes"),
       );
       return;
     }
 
-    // Upload changed files
-    if (syncPlan.uploadUrls.length > 0) {
+    // Upload new and changed files
+    const allFilesToUpload = [...syncPlan.toUpload, ...syncPlan.toUpdate];
+    if (allFilesToUpload.length > 0) {
       const uploadBar = new cliProgress.SingleBar(
         {
           format:
@@ -202,14 +230,14 @@ export async function syncCommand(
           barIncompleteChar: "\u2591",
           hideCursor: true,
         },
-        cliProgress.Presets.shades_classic
+        cliProgress.Presets.shades_classic,
       );
 
-      uploadBar.start(syncPlan.uploadUrls.length, 0);
+      uploadBar.start(allFilesToUpload.length, 0);
 
       const uploadResults: UploadResult[] = [];
-      for (let i = 0; i < syncPlan.uploadUrls.length; i++) {
-        const uploadInfo = syncPlan.uploadUrls[i];
+      for (let i = 0; i < allFilesToUpload.length; i++) {
+        const uploadInfo = allFilesToUpload[i];
         if (!uploadInfo) continue;
 
         const file = files.find((f) => f.path === uploadInfo.path);
@@ -227,7 +255,7 @@ export async function syncCommand(
           await uploadToR2(
             uploadInfo.uploadUrl,
             file.content,
-            uploadInfo.contentType
+            uploadInfo.contentType,
           );
           uploadResults.push({ path: file.path, success: true });
           uploadBar.increment();
@@ -246,15 +274,22 @@ export async function syncCommand(
       const failedUploads = uploadResults.filter((r) => !r.success);
       if (failedUploads.length > 0) {
         console.log(
-          chalk.yellow(`⚠️  ${failedUploads.length} file(s) failed to upload`)
+          chalk.yellow(`⚠️  ${failedUploads.length} file(s) failed to upload`),
         );
         for (const result of failedUploads) {
           console.log(chalk.yellow(`  - ${result.path}: ${result.error}`));
         }
       } else {
-        console.log(
-          chalk.green(`✓ Uploaded ${syncPlan.uploadUrls.length} file(s)`)
-        );
+        if (syncPlan.toUpload.length > 0) {
+          console.log(
+            chalk.green(`✓ Uploaded ${syncPlan.toUpload.length} new file(s)`),
+          );
+        }
+        if (syncPlan.toUpdate.length > 0) {
+          console.log(
+            chalk.green(`✓ Updated ${syncPlan.toUpdate.length} file(s)`),
+          );
+        }
       }
     }
 
@@ -271,7 +306,7 @@ export async function syncCommand(
       displayWarning(
         "Some files are still processing after 30 seconds.\n" +
           "Your site is available but some pages may not be ready yet.\n" +
-          "Check back in a moment."
+          "Check back in a moment.",
       );
     } else if (!syncResult.success && syncResult.errors) {
       displayWarning("Some files had processing errors (see above).");
@@ -281,7 +316,7 @@ export async function syncCommand(
     displaySyncSuccess(
       projectName,
       user.username || user.email || "user",
-      syncPlan.summary
+      syncPlan.summary,
     );
   } catch (error) {
     if (error instanceof Error) {

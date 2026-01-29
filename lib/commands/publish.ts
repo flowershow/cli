@@ -64,7 +64,7 @@ export async function publishCommand(
     const projectName = siteName || getProjectName(files);
     spinner.succeed(`Found ${files.length} file(s) to publish.`);
 
-    const existingSite = await getSiteByName(projectName);
+    const existingSite = await getSiteByName(user.username!, projectName);
 
     // Check if site already exists (if not overwriting)
     if (existingSite && !overwrite) {
@@ -105,16 +105,19 @@ export async function publishCommand(
       sha: file.sha,
     }));
 
-    // Get sync plan from API (for initial publish, all files will be in uploadUrls)
+    // Get sync plan from API (for initial publish, all files will be in toUpload)
     const syncPlan = await syncFiles(site.id, fileMetadata);
 
+    // Combine new and updated files for upload
+    const allFilesToUpload = [...syncPlan.toUpload, ...syncPlan.toUpdate];
+
     // Update progress bar with actual files to upload
-    uploadBar.start(syncPlan.uploadUrls.length, 0);
+    uploadBar.start(allFilesToUpload.length, 0);
 
     // Upload files directly to R2 using presigned URLs
     const uploadResults: UploadResult[] = [];
-    for (let i = 0; i < syncPlan.uploadUrls.length; i++) {
-      const uploadInfo = syncPlan.uploadUrls[i];
+    for (let i = 0; i < allFilesToUpload.length; i++) {
+      const uploadInfo = allFilesToUpload[i];
       if (!uploadInfo) continue;
 
       const file = files.find((f) => f.path === uploadInfo.path);
@@ -123,16 +126,6 @@ export async function publishCommand(
           path: uploadInfo.path,
           success: false,
           error: "File not found in local files",
-        });
-        uploadBar.increment();
-        continue;
-      }
-
-      if (!uploadInfo) {
-        uploadResults.push({
-          path: file.path,
-          success: false,
-          error: "No upload URL received",
         });
         uploadBar.increment();
         continue;
