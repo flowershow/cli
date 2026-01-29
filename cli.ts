@@ -28,7 +28,7 @@ program
     async (
       path: string | undefined,
       morePaths: string[],
-      options: { overwrite?: boolean; name?: string }
+      options: { overwrite?: boolean; name?: string },
     ) => {
       // If no path provided and no subcommand, show help
       if (!path) {
@@ -38,7 +38,7 @@ program
       console.log(chalk.bold("\n💐 FlowerShow CLI - Publish\n"));
       const paths = [path, ...morePaths];
       await publishCommand(paths, options.overwrite || false, options.name);
-    }
+    },
   );
 
 // Auth commands
@@ -80,7 +80,7 @@ program
   .description("Sync changes to an existing published site")
   .option(
     "--name <siteName>",
-    "Specify site name if different from folder name"
+    "Specify site name if different from folder name",
   )
   .option("--dry-run", "Show what would be synced without making changes")
   .option("--verbose", "Show detailed list of all files in each category")
@@ -92,11 +92,11 @@ program
         dryRun?: boolean;
         force?: boolean;
         verbose?: boolean;
-      }
+      },
     ) => {
       console.log(chalk.bold("\n💐 FlowerShow CLI - Sync\n"));
       await syncCommand(path, options);
-    }
+    },
   );
 
 program

@@ -30,7 +30,7 @@ export async function listCommand(): Promise<void> {
     for (const site of sites) {
       const url = getSiteUrl(
         site.projectName,
-        user.username || user.email || "user"
+        user.username || user.email || "user",
       );
       const dashboardUrl = `${API_URL}/site/${site.id}/settings`;
       console.log(chalk.cyan(`  ${site.projectName}`));
@@ -39,8 +39,8 @@ export async function listCommand(): Promise<void> {
       console.log(chalk.gray(`    Created: ${formatDate(site.createdAt)}`));
       console.log(
         chalk.gray(
-          `    Updated: ${formatDate(site.updatedAt || site.createdAt)}`
-        )
+          `    Updated: ${formatDate(site.updatedAt || site.createdAt)}`,
+        ),
       );
       console.log();
     }

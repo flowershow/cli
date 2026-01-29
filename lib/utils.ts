@@ -62,7 +62,7 @@ export function getDashboardUrl(siteId: string): string {
  */
 export async function waitForSync(
   siteId: string,
-  maxWaitSeconds: number = 180
+  maxWaitSeconds: number = 180,
 ): Promise<SyncResult> {
   const startTime = Date.now();
   const maxWaitMs = maxWaitSeconds * 1000;
@@ -99,7 +99,7 @@ export async function waitForSync(
           barIncompleteChar: "\u2591",
           hideCursor: true,
         },
-        cliProgress.Presets.shades_classic
+        cliProgress.Presets.shades_classic,
       );
       progressBar.start(totalFiles, success.length);
     }
@@ -120,8 +120,8 @@ export async function waitForSync(
         for (const blob of errors) {
           console.log(
             chalk.yellow(
-              `  - ${blob.path}: ${blob.syncError || "Unknown error"}`
-            )
+              `  - ${blob.path}: ${blob.syncError || "Unknown error"}`,
+            ),
           );
         }
         return { success: false, blobs, errors };
@@ -144,7 +144,7 @@ export async function waitForSync(
   const pending = blobs.filter((b) => b.syncStatus === "PENDING");
 
   console.log(
-    chalk.yellow(`\n⚠️  Timeout: ${pending.length} file(s) still processing`)
+    chalk.yellow(`\n⚠️  Timeout: ${pending.length} file(s) still processing`),
   );
   for (const blob of pending) {
     console.log(chalk.yellow(`  - ${blob.path}`));
@@ -158,7 +158,7 @@ export async function waitForSync(
  */
 export function displayPublishSuccess(
   projectName: string,
-  username: string
+  username: string,
 ): void {
   const url = getSiteUrl(projectName, username);
 

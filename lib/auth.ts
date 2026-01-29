@@ -107,7 +107,7 @@ export async function pollForToken(
   apiUrl: string,
   deviceCode: string,
   interval: number,
-  expiresIn: number
+  expiresIn: number,
 ): Promise<string> {
   const startTime = Date.now();
   const expirationTime = startTime + expiresIn * 1000;
@@ -155,7 +155,7 @@ export async function pollForToken(
       }
 
       throw new Error(
-        data.error_description || data.error || "Unknown error occurred"
+        data.error_description || data.error || "Unknown error occurred",
       );
     } catch (error) {
       if (
@@ -186,7 +186,7 @@ export async function requireAuth(): Promise<UserInfo> {
   } catch (error) {
     displayError(
       "You must be authenticated to use this command.\n" +
-        "Run `flowershow auth login` to authenticate."
+        "Run `flowershow auth login` to authenticate.",
     );
     process.exit(0);
   }

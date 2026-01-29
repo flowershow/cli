@@ -33,7 +33,7 @@ export async function authLoginCommand(): Promise<void> {
 
     if (!response.ok) {
       throw new Error(
-        `Failed to initiate authentication: ${response.statusText}`
+        `Failed to initiate authentication: ${response.statusText}`,
       );
     }
 
@@ -51,10 +51,10 @@ export async function authLoginCommand(): Promise<void> {
 
     // Step 2: Display instructions to user
     console.log(
-      chalk.bold("\nPlease complete authentication in your browser:\n")
+      chalk.bold("\nPlease complete authentication in your browser:\n"),
     );
     console.log(
-      chalk.cyan(`  ${verification_uri_complete || verification_uri}\n`)
+      chalk.cyan(`  ${verification_uri_complete || verification_uri}\n`),
     );
 
     if (!verification_uri_complete) {
@@ -64,8 +64,8 @@ export async function authLoginCommand(): Promise<void> {
 
     console.log(
       chalk.gray(
-        `This code expires in ${Math.floor(expires_in / 60)} minutes\n`
-      )
+        `This code expires in ${Math.floor(expires_in / 60)} minutes\n`,
+      ),
     );
 
     spinner.start("Waiting for authorization...");
@@ -75,7 +75,7 @@ export async function authLoginCommand(): Promise<void> {
       API_URL,
       device_code,
       interval,
-      expires_in
+      expires_in,
     );
 
     // Step 4: Get user info
@@ -89,17 +89,17 @@ export async function authLoginCommand(): Promise<void> {
     // Step 6: Display success
     console.log(
       chalk.gray(
-        `Logged in as: ${chalk.cyan(user.username || user.email || "user")}`
-      )
+        `Logged in as: ${chalk.cyan(user.username || user.email || "user")}`,
+      ),
     );
     console.log(
-      chalk.gray("\nYou can now use the CLI to publish your sites.\n")
+      chalk.gray("\nYou can now use the CLI to publish your sites.\n"),
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("fetch")) {
       displayError(
         "Failed to connect to Flowershow API.\n" +
-          "Please check your internet connection and try again."
+          "Please check your internet connection and try again.",
       );
     } else if (error instanceof Error) {
       displayError(error.message);

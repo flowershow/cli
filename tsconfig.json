@@ -39,13 +39,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": [
-    "cli.ts",
-    "lib/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "__test__"
-  ]
+  "include": ["cli.ts", "lib/**/*.ts"],
+  "exclude": ["node_modules", "dist", "__test__"]
 }

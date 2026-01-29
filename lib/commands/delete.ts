@@ -12,7 +12,7 @@ export async function deleteCommand(projectName: string): Promise<void> {
   try {
     if (!projectName) {
       displayError(
-        "Project name is required.\nUsage: flowershow delete <project-name>"
+        "Project name is required.\nUsage: flowershow delete <project-name>",
       );
       process.exit(1);
     }
@@ -29,7 +29,7 @@ export async function deleteCommand(projectName: string): Promise<void> {
     if (!siteToDelete) {
       spinner.fail(`Site '${projectName}' not found`);
       displayError(
-        `Site '${projectName}' not found.\nUse 'flowershow list' to see all sites.`
+        `Site '${projectName}' not found.\nUse 'flowershow list' to see all sites.`,
       );
       process.exit(1);
     }
@@ -46,7 +46,7 @@ export async function deleteCommand(projectName: string): Promise<void> {
         `This site has an active premium subscription.\n` +
           `You must cancel the subscription before deleting the site.\n` +
           `Please visit your dashboard to manage your subscription:\n\n` +
-          `${dashboardUrl}`
+          `${dashboardUrl}`,
       );
       process.exit(1);
     }
@@ -54,8 +54,8 @@ export async function deleteCommand(projectName: string): Promise<void> {
     // Prompt for confirmation
     console.log(
       chalk.yellow(
-        "⚠️  This will permanently delete the site and all its content."
-      )
+        "⚠️  This will permanently delete the site and all its content.",
+      ),
     );
     console.log();
 

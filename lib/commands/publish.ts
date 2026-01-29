@@ -33,7 +33,7 @@ interface UploadResult {
 export async function publishCommand(
   inputPaths: string | string[],
   overwrite: boolean = false,
-  siteName?: string
+  siteName?: string,
 ): Promise<void> {
   try {
     const spinner = ora();
@@ -72,7 +72,7 @@ export async function publishCommand(
         `A site named '${existingSite.site.projectName}' already exists.\n` +
           `Please choose a different name or delete the existing site first.\n` +
           `Use 'flowershow list' to see all sites.\n\n` +
-          `💡 Tip: Use the --overwrite flag to publish over an existing site.`
+          `💡 Tip: Use the --overwrite flag to publish over an existing site.`,
       );
       process.exit(1);
     }
@@ -95,7 +95,7 @@ export async function publishCommand(
         barIncompleteChar: "\u2591",
         hideCursor: true,
       },
-      cliProgress.Presets.shades_classic
+      cliProgress.Presets.shades_classic,
     );
 
     // Prepare file metadata for sync request
@@ -135,7 +135,7 @@ export async function publishCommand(
         await uploadToR2(
           uploadInfo.uploadUrl,
           file.content,
-          uploadInfo.contentType
+          uploadInfo.contentType,
         );
         uploadResults.push({ path: file.path, success: true });
         uploadBar.increment();
@@ -154,7 +154,7 @@ export async function publishCommand(
     const failedUploads = uploadResults.filter((r) => !r.success);
     if (failedUploads.length > 0) {
       console.log(
-        chalk.yellow(`⚠️  ${failedUploads.length} file(s) failed to upload`)
+        chalk.yellow(`⚠️  ${failedUploads.length} file(s) failed to upload`),
       );
       for (const result of failedUploads) {
         console.log(chalk.yellow(`  - ${result.path}: ${result.error}`));
@@ -170,7 +170,7 @@ export async function publishCommand(
       displayWarning(
         "Some files are still processing after 30 seconds.\n" +
           "Your site is available but some pages may not be ready yet.\n" +
-          "Check back in a moment."
+          "Check back in a moment.",
       );
     } else if (!syncResult.success && syncResult.errors) {
       displayWarning("Some files had processing errors (see above).");
@@ -179,7 +179,7 @@ export async function publishCommand(
     // Display success
     displayPublishSuccess(
       site.projectName,
-      user.username || user.email || "user"
+      user.username || user.email || "user",
     );
   } catch (error) {
     if (error instanceof Error) {

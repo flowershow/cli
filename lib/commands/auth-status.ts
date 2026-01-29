@@ -26,14 +26,14 @@ export async function authStatusCommand(): Promise<void> {
       console.log(
         chalk.gray(
           `Logged in as: ${chalk.cyan(
-            userInfo.username || userInfo.email || "user"
-          )}`
-        )
+            userInfo.username || userInfo.email || "user",
+          )}`,
+        ),
       );
     } catch (error) {
       spinner.fail(chalk.red("Authentication token is invalid or expired"));
       console.log(
-        chalk.gray("Run `flowershow auth login` to re-authenticate.\n")
+        chalk.gray("Run `flowershow auth login` to re-authenticate.\n"),
       );
     }
   } catch (error) {
