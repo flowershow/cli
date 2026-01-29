@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.0.0
+
+### Major Changes
+
+- **Breaking change:** Updated to match new Flowershow API response format.
+
+  Previous CLI versions are incompatible with the current API and will fail to detect file processing status correctly. Please upgrade to this version.
+
 ## 0.4.1
 
 ### Patch Changes
@@ -35,10 +43,12 @@ See [MIGRATION.md](MIGRATION.md) for complete migration instructions.
   ## What Changed
 
   ### Package Name
+
   - NPM package: `flowershow` → `flowershow-publish`
   - Binary command: `flowershow` → `publish`
 
   ### Command Structure
+
   - **Main publish command is now default**: `publish <path>` (previously `flowershow publish <path>`)
   - **All other commands updated**: Use `publish` as the base command
     - `publish auth login` (was `flowershow auth login`)
