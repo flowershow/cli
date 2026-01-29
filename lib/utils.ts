@@ -4,21 +4,23 @@ import { getSiteStatus } from "./api-client.js";
 import { API_URL, APP_URL } from "./const.js";
 
 interface BlobStatus {
+  id: string;
   path: string;
-  syncStatus: "PENDING" | "SUCCESS" | "ERROR";
-  syncError?: string;
+  syncStatus: "UPLOADING" | "PROCESSING" | "SUCCESS" | "ERROR";
+  syncError: string | null;
+  extension: string | null;
 }
 
 interface SiteStatusData {
-  blobs?: BlobStatus[];
   siteId: string;
-  status: string;
-  files?: {
+  status: "pending" | "complete" | "error";
+  files: {
     total: number;
     pending: number;
     success: number;
     failed: number;
   };
+  blobs: BlobStatus[];
 }
 
 interface SyncResult {
@@ -82,7 +84,9 @@ export async function waitForSync(
       return { success: true, blobs: [] };
     }
 
-    const pending = blobs.filter((b) => b.syncStatus === "PENDING");
+    const pending = blobs.filter(
+      (b) => b.syncStatus === "UPLOADING" || b.syncStatus === "PROCESSING",
+    );
     const errors = blobs.filter((b) => b.syncStatus === "ERROR");
     const success = blobs.filter((b) => b.syncStatus === "SUCCESS");
 
@@ -141,7 +145,9 @@ export async function waitForSync(
   // Timeout
   const statusData: SiteStatusData = await getSiteStatus(siteId);
   const blobs = statusData.blobs || [];
-  const pending = blobs.filter((b) => b.syncStatus === "PENDING");
+  const pending = blobs.filter(
+    (b) => b.syncStatus === "UPLOADING" || b.syncStatus === "PROCESSING",
+  );
 
   console.log(
     chalk.yellow(`\n⚠️  Timeout: ${pending.length} file(s) still processing`),

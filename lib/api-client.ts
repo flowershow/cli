@@ -60,14 +60,16 @@ export interface SyncFilesResponse {
 }
 
 interface BlobStatus {
+  id: string;
   path: string;
-  syncStatus: "PENDING" | "SUCCESS" | "ERROR";
-  syncError?: string;
+  syncStatus: "UPLOADING" | "PROCESSING" | "SUCCESS" | "ERROR";
+  syncError: string | null;
+  extension: string | null;
 }
 
 interface SiteStatusResponse {
   siteId: string;
-  status: string;
+  status: "pending" | "complete" | "error";
   files: {
     total: number;
     pending: number;
