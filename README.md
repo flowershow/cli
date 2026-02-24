@@ -1,3 +1,10 @@
+ > [!WARNING]
+> **This repository is archived and no longer maintained.**
+> The CLI has moved to the [flowershow/flowershow](https://github.com/flowershow/flowershow) monorepo.
+> Please install [`@flowershow/publish`](https://www.npmjs.com/package/@flowershow/publish) from there going forward.
+
+---
+
 # FlowerShow CLI (Beta 🚧)
 
 A CLI tool for publishing Markdown files and folders directly to FlowerShow with OAuth authentication.
